@@ -1,0 +1,110 @@
+---
+title: 'Module 6-2-Application: Data Visualization with R'
+author: "Bariz Adenwala"
+date: "3/20/2022"
+output: html_document
+---
+#load libraries
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(ggthemes)
+library(scales)
+library(plotly)
+library(lattice)
+library(GGally)
+library(dplyr)
+```
+## Question 1: Name "mtcars" built-in dataset as "cars." Take a look at the data first. Notice that cylinder is a categorical variable. Draw a chart of the cylinders appropriately for one categorical variable. fill the bar with red color.
+```{r}
+cars <- mtcars
+ggplot(data = cars, aes(cyl)) +
+geom_histogram(binwidth = 1, fill = 'red') 
+```
+# install this package: 
+```{r}
+#
+#install.packages("wooldridge")
+library(wooldridge)
+
+help(attend)
+df <- attend
+```
+
+## Question 2: Draw a scatter plot using the lattice library, with the x being "termGPA" and the y being "attend" (both variables are inside df). What informations can you get from this plot? 
+```{r}
+xyplot(attend ~ termGPA, df)
+```
+
+##This plot shows the coorelation between term GPA and attendance of the students.
+
+## Question 3: Using ggplot2, draw a scatter plot with the x being "priGPA" and the y being "missed" (both variables are inside df). Modify your plot including the size of points equal to 2 and the color as blue. Then apply facet to show the relationship between prior GPA and missed classes by dividing the data into two groups using "soph" variable (1 = Sophomore; 0 = Not Sophomore). In other words, we want to see if a sophomore status or not can moderate the relationship between the independent (x) and dependent (y) variables. Add the theme "bw" to it. Also, provide labels for x and y axis, the title of your plot. Using "caption" option, you may also indicate the level of the third variable (moderator). 
+
+```{r}
+ggplot(data = df, aes(x=priGPA, y=missed)) +
+  geom_point(size=2, color = 'blue') +
+  facet_grid(cols = vars(soph), labeller = label_both) +
+  theme_bw() +
+  labs(title = 'Not Sophomore vs. Sophomore', x = "Missed Classes", y = "Prior GPA", caption = "The third variable soph dictates 0 as 'not sophomore' and 1 as 'sophomore'")
+```
+## Question 4: Generate a bar plot for the count of  ACT scores from "df". What type of distribution does this plot remind you of?
+```{r}
+ggplot(df, aes(ACT)) +
+  geom_bar(binwidth = 1)
+```
+## This plot reminds me of a symmetrical distribution.
+
+## Question 5: Create another bar plot, but this time your y-axis will be the final score with your x-axis kept as "ACT"). Also, fill your plot with the factor of the variable "soph". Try to position the bar chart dodged (using the 'dodge' option) as well as the stacked, which is a default. Which one helps you notice the differences in the relationships between ACT and final across the sophomore and non-sophomore groups. What would you say about the differences in the patterns of relationships between ACT and final scores shown in the sophomore and non-sophomore groups?
+```{r}
+ggplot(data = df, aes(x = ACT, y = final)) +
+  geom_bar(stat = 'identity', aes(fill=factor(soph)), position = "dodge") 
+```
+```{r}
+ggplot(data = df, aes(x = ACT, y = final)) +
+  geom_bar(stat = 'identity', aes(fill=factor(soph))) 
+```
+``
+#The dodge positon helps me notice the differences in relationships more. The plot is easier to read a frequency difference, but it may be better to view the plot in a stack position to compare distribution. I would say that for both non sophomores an dsophomores, the data seems to be relatively symmetrical. However, it seems that those who got  abetter grade on the final did better on the ACT.
+
+
+## Question 6: Draw a boxplot, using "ACT" as the x-axis and "attend" as the y-axis, grouped by freshman variable. Try both one chart or two charts grouped by the freshman variable to see which one helps you discern the pattern of the relationship between x and y across the groups. Is the relationship between x and y shown in the non-freshman group (denoted as "0" in the data) the same as that shown in the freshman group? Next, instead of the boxplot, create a scatter plot as a scatter plot. Do the group differences in the pattern of the relationships shown through the barplot become clear or obscure? In sum, describe what you found in the relationship between x and y and how the degree to which the pattern is different across the group.
+
+```{r}
+ggplot(data = df, aes(x = factor(ACT), y = attend)) +
+  geom_boxplot(aes(group = factor(frosh))) 
+```
+#Yes, the relationship between x and y is the same for both groups.
+```{r}
+ggplot(df, aes(x = ACT, y = attend)) +
+  geom_point() +
+  facet_wrap(vars(frosh))
+```
+#The group difference become more clear. It appears that attendance does not seem to have a majopr effect on ACT scores.
+
+## Question 7: Draw a correlation plot showing all pairwise associations among the following variables: "attend", "termGPA", "priGPA" and "ACT".  Next, add the variables "final" ,"atndrte" and "hwrte" to a correlation plot. Which pair of variables has the highest positive correlation? What is the correlation statistic? Does it make sense? why or why not. Which sets of variables have the next highest correlation? The correlations among variables give us some insights as to what students should do to improve their GPA (termGPA and priGPA). Accoridng to the data, between attendance rate ("atndrte") and the rate of homework turned in ("hwrte"), which is more effective way to improve GPA's? (note you don't need to test differences in correlations; use eyeballing). 
+
+```{r}
+ggpairs(df %>% select(attend, termGPA, priGPA, ACT))
+```
+#The pair of variables that have the highest coorelation are priGPA and termGPA.The coorelation statistic is 0.653. This makes sense as students tend to be consistent with their GPA from previous semesters. The next set of variables that have high coorelation is termGPA and attendance. According to the data, the more ffective way to increase GPA is to have a higher homework  turn in rate. This is because previous GPA has the highest cooreleation for the term GPA. Turning in homework increases GPA, and has a stronger coorelation than having higher attendance. 
+
+## Question 8: Create a scatter plot with a linear regression line for the variables "priGPA" and "termGPA". Draw a separate regression line for sophomore and non-sophomore group and compare the slope of the line. Assign "plot" to the chart created.  What can you tell about the strengths of the relationships between priGPA and termGPA?  Hint: to introduce a third variable (moderator) to the scatter plot of x and y, you can add "color = factor(soph)". You may also use facet. No one can remember everything, so you should utilize help() function in RStudio as often as you need to solve a problem. You can also google what you are looking for.
+```{r}
+plot <- ggplot(data = df, aes(x = priGPA, y = termGPA)) +
+  geom_point(aes(color =factor(soph))) +
+  geom_smooth(method=lm) + geom_smooth(aes(x = soph), method = lm)
+```
+#The strength of relationships between priGPA and termGPA seems to be stronger for the sophmore group. The points are closer to the regression line.
+
+## Question 9: Use the function "ggplotly()" and pass the "plot" through it. Move your cursor over the plots to feel the interactiveness. Also, label your plot with the variable "soph". 
+```{r}
+ggplotly(plot)
+plot + geom_label_repel(aes(label = soph))
+```
+
+
+## Question 10: Save your plot created in Question 8 as an image file with the following name: "myplot.png" and prepare to submit it in the next step. 
+
+```{r}
+ggsave(plot, filename = 'myplot.png')
+```
